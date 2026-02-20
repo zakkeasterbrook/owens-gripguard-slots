@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GripGuard Slots | Owens Construction</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="background-texture"></div>
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Owens Construction Labs</p>
+        <h1>GripGuard Bonus Slots</h1>
+        <p class="lead">
+          A playful nod to the new GripGuard product drop. Spin the reels, trigger sticky-tool bonus rounds, and see how much roof-cred you can stack.
+        </p>
+      </div>
+      <div class="status-panel">
+        <div>
+          <span class="label">Bankroll</span>
+          <span id="bankroll" class="value">500</span>
+        </div>
+        <div>
+          <span class="label">Last Win</span>
+          <span id="lastWin" class="value">0</span>
+        </div>
+        <div>
+          <span class="label">Multiplier</span>
+          <span id="multiplier" class="value">x1</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="slot-wrapper">
+      <div class="machine">
+        <div class="machine-inner">
+          <div class="reels" id="reels"></div>
+        </div>
+        <div class="controls">
+          <div class="bet">
+            <label for="bet">Bet</label>
+            <div class="bet-input">
+              <button id="betDown">-</button>
+              <span id="betValue">10</span>
+              <button id="betUp">+</button>
+            </div>
+          </div>
+          <button id="spinBtn" class="spin">Spin</button>
+          <button id="autoBtn" class="auto">Auto Play</button>
+        </div>
+      </div>
+
+      <section class="info">
+        <div>
+          <h2>How it works</h2>
+          <ul>
+            <li>Match three symbols on the center line to win up to 20x your bet.</li>
+            <li>Landing two or more <span class="symbol">💎</span> Scatter bolts triggers the Bonus Grip round.</li>
+            <li>Bonus Grip reveals three roof tiles—pick one to reveal a random multiplier between x3 and x15.</li>
+          </ul>
+        </div>
+        <div>
+          <h2>Symbol values</h2>
+          <div class="legend">
+            <p><span class="symbol">7️⃣</span> x20</p>
+            <p><span class="symbol">💎</span> Scatter / Bonus</p>
+            <p><span class="symbol">💰</span> x12</p>
+            <p><span class="symbol">🔧</span> x10</p>
+            <p><span class="symbol">⚡</span> x8</p>
+            <p><span class="symbol">🍀</span> x6</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <section class="footer-cta">
+      <h3>Bonus round = bonus leads.</h3>
+      <p>
+        When GripGuard ships, nail guns stay put. When you hit a bonus round here, screenshot your best score and send it to
+        <a href="mailto:sales@owensconstruction.com">sales@owensconstruction.com</a> for swag.
+      </p>
+    </section>
+
+    <dialog id="bonusModal">
+      <h2>Bonus Grip!</h2>
+      <p>Select a roof tile to reveal your multiplier.</p>
+      <div class="tiles" id="bonusTiles"></div>
+      <button id="closeBonus">Skip Bonus</button>
+    </dialog>
+
+    <script src="script.js" type="module"></script>
+  </body>
+</html>
