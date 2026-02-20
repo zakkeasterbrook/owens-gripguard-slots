@@ -1,14 +1,14 @@
-const symbols = ["7️⃣", "💎", "💰", "🔧", "⚡", "🍀"];
-const payouts = {
-  "7️⃣": 20,
-  "💎": 0, // scatter logic handled separately
-  "💰": 12,
-  "🔧": 10,
-  "⚡": 8,
-  "🍀": 6,
-};
+const symbolSet = [
+  { icon: "🪙", payout: 25 },
+  { icon: "💎", payout: 0, scatter: true },
+  { icon: "🚀", payout: 15 },
+  { icon: "🧊", payout: 12 },
+  { icon: "💹", payout: 10 },
+  { icon: "🎛️", payout: 8 },
+  { icon: "🔗", payout: 6 },
+];
 
-const reelsElement = document.getElementById("reels");
+const reelsEl = document.querySelectorAll(".reel-column");
 const bankrollEl = document.getElementById("bankroll");
 const lastWinEl = document.getElementById("lastWin");
 const multiplierEl = document.getElementById("multiplier");
@@ -25,61 +25,32 @@ let bankroll = 500;
 let bet = 10;
 let lastWin = 0;
 let multiplier = 1;
+let isSpinning = false;
 let autoPlay = false;
-let autoInterval;
+let autoTimeout;
 
-function createReels() {
-  reelsElement.innerHTML = "";
-  for (let i = 0; i < 3; i++) {
-    const column = document.createElement("div");
-    column.className = "reel-column";
-    const list = document.createElement("ul");
-    column.appendChild(list);
-    reelsElement.appendChild(column);
-  }
+function randomSymbol() {
+  return symbolSet[Math.floor(Math.random() * symbolSet.length)].icon;
 }
 
-function spinReels() {
-  const results = [];
-  document.querySelectorAll(".reel-column ul").forEach((ul) => {
-    ul.innerHTML = "";
-    for (let i = 0; i < 5; i++) {
-      const li = document.createElement("li");
-      const symbol = symbols[Math.floor(Math.random() * symbols.length)];
-      li.textContent = symbol;
-      ul.appendChild(li);
-      if (i === 2) {
-        results.push(symbol);
-      }
+function buildInitialReels() {
+  reelsEl.forEach((column) => {
+    const strip = column.querySelector(".reel-strip");
+    strip.innerHTML = "";
+    for (let i = 0; i < 3; i++) {
+      const tile = document.createElement("div");
+      tile.className = "tile";
+      tile.textContent = randomSymbol();
+      strip.appendChild(tile);
     }
   });
-  return results;
 }
 
-function evaluate(results) {
-  const counts = results.reduce((acc, symbol) => {
-    acc[symbol] = (acc[symbol] || 0) + 1;
-    return acc;
-  }, {});
-
-  let winAmount = 0;
-  multiplier = 1;
-
-  Object.entries(counts).forEach(([symbol, count]) => {
-    if (count === 3 && payouts[symbol]) {
-      winAmount = bet * payouts[symbol];
-      multiplier = payouts[symbol];
-    }
-  });
-
-  const scatters = counts["💎"] || 0;
-  if (scatters >= 2) {
-    triggerBonus();
-  }
-
-  bankroll += winAmount;
-  lastWin = winAmount;
-  updateUI();
+function toggleControls(disabled) {
+  spinBtn.disabled = disabled;
+  autoBtn.disabled = disabled;
+  betDownBtn.disabled = disabled;
+  betUpBtn.disabled = disabled;
 }
 
 function updateUI() {
@@ -87,72 +58,190 @@ function updateUI() {
   lastWinEl.textContent = lastWin;
   multiplierEl.textContent = `x${multiplier}`;
   betValueEl.textContent = bet;
-  spinBtn.disabled = bankroll <= 0 || bet > bankroll;
+  if (bankroll <= 0) {
+    autoPlay = false;
+    autoBtn.textContent = "Auto play";
+  }
 }
 
-function playSpin() {
-  if (bet > bankroll) return;
+function adjustBet(delta) {
+  bet = Math.min(Math.max(5, bet + delta), 100);
+  if (bet > bankroll) {
+    bet = bankroll;
+  }
+  updateUI();
+}
+
+async function spinReel(column, finalSymbol, reelIndex) {
+  return new Promise((resolve) => {
+    const strip = column.querySelector(".reel-strip");
+    const sequence = [];
+    const cycles = 14 + reelIndex * 4;
+    for (let i = 0; i < cycles; i++) {
+      sequence.push(randomSymbol());
+    }
+    const tail = [randomSymbol(), finalSymbol, randomSymbol()];
+    sequence.push(...tail);
+
+    strip.innerHTML = "";
+    sequence.forEach((symbol) => {
+      const tile = document.createElement("div");
+      tile.className = "tile";
+      tile.textContent = symbol;
+      strip.appendChild(tile);
+    });
+
+    const tileHeight = strip.firstElementChild.getBoundingClientRect().height;
+    const offset = -(tileHeight * (sequence.length - 3));
+
+    strip.style.transition = "none";
+    strip.style.transform = "translateY(0)";
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        strip.style.transition = `transform ${1.1 + reelIndex * 0.1}s cubic-bezier(0.2, 0.7, 0.15, 1)`;
+        strip.style.transform = `translateY(${offset}px)`;
+      });
+    });
+
+    const handleEnd = () => {
+      strip.removeEventListener("transitionend", handleEnd);
+      const finalView = sequence.slice(-3);
+      strip.innerHTML = "";
+      finalView.forEach((symbol) => {
+        const tile = document.createElement("div");
+        tile.className = "tile";
+        tile.textContent = symbol;
+        strip.appendChild(tile);
+      });
+      strip.style.transition = "none";
+      strip.style.transform = "translateY(0)";
+      resolve(finalView[1]);
+    };
+
+    strip.addEventListener("transitionend", handleEnd, { once: true });
+  });
+}
+
+async function runBonusRound() {
+  return new Promise((resolve) => {
+    bonusTiles.innerHTML = "";
+    const options = [3, 5, 8, 10, 12, 15].sort(() => Math.random() - 0.5).slice(0, 3);
+    let resolved = false;
+
+    const finalize = (value) => {
+      if (resolved) return;
+      resolved = true;
+      if (value) {
+        const win = bet * value;
+        bankroll += win;
+        lastWin = win;
+        multiplier = value;
+        updateUI();
+      }
+      bonusModal.close();
+      resolve();
+    };
+
+    options.forEach((value) => {
+      const btn = document.createElement("button");
+      btn.className = "tile-btn";
+      btn.textContent = "?";
+      btn.addEventListener("click", () => {
+        btn.textContent = `x${value}`;
+        btn.disabled = true;
+        btn.style.background = "linear-gradient(120deg, #ffed6f, #ff7ac3)";
+        setTimeout(() => finalize(value), 700);
+      });
+      bonusTiles.appendChild(btn);
+    });
+
+    closeBonusBtn.onclick = () => finalize(null);
+    bonusModal.addEventListener(
+      "close",
+      () => {
+        if (!resolved) finalize(null);
+      },
+      { once: true }
+    );
+
+    bonusModal.showModal();
+  });
+}
+
+async function evaluateResults(results) {
+  const counts = results.reduce((acc, symbol) => {
+    acc[symbol] = (acc[symbol] || 0) + 1;
+    return acc;
+  }, {});
+
+  multiplier = 1;
+  let winAmount = 0;
+
+  Object.entries(counts).forEach(([symbol, count]) => {
+    const entry = symbolSet.find((item) => item.icon === symbol);
+    if (!entry) return;
+    if (count === 3 && entry.payout) {
+      winAmount = bet * entry.payout;
+      multiplier = entry.payout;
+    }
+  });
+
+  const scatters = counts["💎"] || 0;
+  if (scatters >= 2) {
+    await runBonusRound();
+  }
+
+  bankroll += winAmount;
+  lastWin = winAmount;
+  updateUI();
+}
+
+async function spinMachine() {
+  if (isSpinning || bet > bankroll || bet <= 0) return;
+  isSpinning = true;
+  toggleControls(true);
   bankroll -= bet;
   updateUI();
-  const results = spinReels();
-  setTimeout(() => evaluate(results), 600);
+
+  const targets = Array.from({ length: 3 }, () => randomSymbol());
+  const results = await Promise.all(
+    Array.from(reelsEl).map((column, index) => spinReel(column, targets[index], index))
+  );
+
+  await evaluateResults(results);
+  isSpinning = false;
+  toggleControls(false);
+
+  if (autoPlay && bankroll >= bet) {
+    autoTimeout = setTimeout(spinMachine, 400);
+  } else if (autoPlay && bankroll < bet) {
+    autoPlay = false;
+    autoBtn.textContent = "Auto play";
+  }
 }
 
-function triggerBonus() {
-  bonusTiles.innerHTML = "";
-  const multipliers = [3, 5, 8, 10, 12, 15];
-  const choices = multipliers.sort(() => 0.5 - Math.random()).slice(0, 3);
-  choices.forEach((value, index) => {
-    const btn = document.createElement("button");
-    btn.className = "tile-btn";
-    btn.textContent = "?";
-    btn.addEventListener("click", () => revealBonus(btn, value));
-    bonusTiles.appendChild(btn);
-  });
-  bonusModal.showModal();
-}
-
-function revealBonus(btn, value) {
-  btn.textContent = `x${value}`;
-  btn.disabled = true;
-  const bonusWin = bet * value;
-  bankroll += bonusWin;
-  lastWin = bonusWin;
-  multiplier = value;
-  updateUI();
-  setTimeout(() => bonusModal.close(), 1000);
-}
-
-spinBtn.addEventListener("click", playSpin);
+spinBtn.addEventListener("click", spinMachine);
 autoBtn.addEventListener("click", () => {
+  if (isSpinning) return;
   autoPlay = !autoPlay;
-  autoBtn.textContent = autoPlay ? "Stop Auto" : "Auto Play";
+  autoBtn.textContent = autoPlay ? "Stop" : "Auto play";
   if (autoPlay) {
-    autoInterval = setInterval(() => {
-      if (bankroll <= 0) {
-        autoPlay = false;
-        autoBtn.textContent = "Auto Play";
-        clearInterval(autoInterval);
-        return;
-      }
-      playSpin();
-    }, 1200);
+    spinMachine();
   } else {
-    clearInterval(autoInterval);
+    clearTimeout(autoTimeout);
   }
 });
 
-betDownBtn.addEventListener("click", () => {
-  bet = Math.max(5, bet - 5);
-  updateUI();
+betDownBtn.addEventListener("click", () => adjustBet(-5));
+betUpBtn.addEventListener("click", () => adjustBet(5));
+
+document.addEventListener("keydown", (event) => {
+  if (event.code === "Space" && !event.repeat) {
+    event.preventDefault();
+    spinMachine();
+  }
 });
 
-betUpBtn.addEventListener("click", () => {
-  bet = Math.min(100, bet + 5);
-  updateUI();
-});
-
-closeBonusBtn.addEventListener("click", () => bonusModal.close());
-
-createReels();
+buildInitialReels();
 updateUI();

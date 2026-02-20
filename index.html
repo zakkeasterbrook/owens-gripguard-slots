@@ -3,98 +3,116 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GripGuard Slots | Owens Construction</title>
+    <title>Neon Ledger Slots</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div class="background-texture"></div>
+    <div class="grid-overlay"></div>
     <header class="hero">
       <div>
-        <p class="eyebrow">Owens Construction Labs</p>
-        <h1>GripGuard Bonus Slots</h1>
+        <p class="eyebrow">Crypto arcade</p>
+        <h1>Neon Ledger Slots</h1>
         <p class="lead">
-          A playful nod to the new GripGuard product drop. Spin the reels, trigger sticky-tool bonus rounds, and see how much roof-cred you can stack.
+          Spin a three-reel machine inspired by Bitcoin miners, Solana validators, and OG Ethereum whales. Trigger scatter bolts to unlock bonus
+          roof picks and chain multipliers.
         </p>
+        <div class="cta-row">
+          <button id="spinBtn" class="primary">Spin</button>
+          <button id="autoBtn" class="ghost">Auto play</button>
+        </div>
       </div>
-      <div class="status-panel">
+      <div class="score-panel">
         <div>
-          <span class="label">Bankroll</span>
-          <span id="bankroll" class="value">500</span>
+          <span>Bankroll</span>
+          <strong id="bankroll">500</strong>
         </div>
         <div>
-          <span class="label">Last Win</span>
-          <span id="lastWin" class="value">0</span>
+          <span>Bet</span>
+          <div class="bet-group">
+            <button id="betDown">-</button>
+            <strong id="betValue">10</strong>
+            <button id="betUp">+</button>
+          </div>
         </div>
         <div>
-          <span class="label">Multiplier</span>
-          <span id="multiplier" class="value">x1</span>
+          <span>Last win</span>
+          <strong id="lastWin">0</strong>
+        </div>
+        <div>
+          <span>Multiplier</span>
+          <strong id="multiplier">x1</strong>
         </div>
       </div>
     </header>
 
-    <main class="slot-wrapper">
-      <div class="machine">
-        <div class="machine-inner">
-          <div class="reels" id="reels"></div>
-        </div>
-        <div class="controls">
-          <div class="bet">
-            <label for="bet">Bet</label>
-            <div class="bet-input">
-              <button id="betDown">-</button>
-              <span id="betValue">10</span>
-              <button id="betUp">+</button>
+    <main class="layout">
+      <section class="machine">
+        <div class="machine-shell">
+          <div class="reels" id="reels">
+            <div class="reel-column">
+              <div class="reel-window">
+                <div class="reel-strip"></div>
+              </div>
+            </div>
+            <div class="reel-column">
+              <div class="reel-window">
+                <div class="reel-strip"></div>
+              </div>
+            </div>
+            <div class="reel-column">
+              <div class="reel-window">
+                <div class="reel-strip"></div>
+              </div>
             </div>
           </div>
-          <button id="spinBtn" class="spin">Spin</button>
-          <button id="autoBtn" class="auto">Auto Play</button>
+          <p class="hint">Matching three symbols on the center line pays. Two ⚡ bolts trigger bonus tiles.</p>
         </div>
-      </div>
+      </section>
 
       <section class="info">
         <div>
-          <h2>How it works</h2>
-          <ul>
-            <li>Match three symbols on the center line to win up to 20x your bet.</li>
-            <li>Landing two or more <span class="symbol">💎</span> Scatter bolts triggers the Bonus Grip round.</li>
-            <li>Bonus Grip reveals three roof tiles—pick one to reveal a random multiplier between x3 and x15.</li>
-          </ul>
+          <h2>Payout table</h2>
+          <div class="legend">
+            <p><span class="symbol">🪙</span> x25</p>
+            <p><span class="symbol">💎</span> Scatter / Bonus</p>
+            <p><span class="symbol">🚀</span> x15</p>
+            <p><span class="symbol">🧊</span> x12</p>
+            <p><span class="symbol">💹</span> x10</p>
+            <p><span class="symbol">🎛️</span> x8</p>
+            <p><span class="symbol">🔗</span> x6</p>
+          </div>
         </div>
         <div>
-          <h2>Symbol values</h2>
-          <div class="legend">
-            <p><span class="symbol">7️⃣</span> x20</p>
-            <p><span class="symbol">💎</span> Scatter / Bonus</p>
-            <p><span class="symbol">💰</span> x12</p>
-            <p><span class="symbol">🔧</span> x10</p>
-            <p><span class="symbol">⚡</span> x8</p>
-            <p><span class="symbol">🍀</span> x6</p>
-          </div>
+          <h2>Bonus round</h2>
+          <p>
+            Land two or more <span class="symbol">💎</span> scatter bolts to enter the Neon Bonus. Pick one of three glowing roof tiles to reveal a
+            multiplier between x3 and x15. Winnings stack on top of your last spin.
+          </p>
         </div>
       </section>
     </main>
 
-    <section class="footer-cta">
-      <h3>Bonus round = bonus leads.</h3>
+    <section class="footer">
+      <h3>Play anywhere.</h3>
       <p>
-        When GripGuard ships, nail guns stay put. When you hit a bonus round here, screenshot your best score and send it to
-        <a href="mailto:sales@owensconstruction.com">sales@owensconstruction.com</a> for swag.
+        Neon Ledger Slots is a single HTML file — drop it onto any static host, kiosk screen, or conference display. Built for fun, no wallet
+        required.
       </p>
     </section>
 
-    <dialog id="bonusModal">
-      <h2>Bonus Grip!</h2>
-      <p>Select a roof tile to reveal your multiplier.</p>
+    <dialog id="bonusModal" class="bonus">
+      <h2>Neon Bonus</h2>
+      <p>Pick a tile to reveal your multiplier.</p>
       <div class="tiles" id="bonusTiles"></div>
-      <button id="closeBonus">Skip Bonus</button>
+      <button id="closeBonus" class="ghost">Skip</button>
     </dialog>
 
-    <script src="script.js" type="module"></script>
+    <script type="module" src="script.js"></script>
   </body>
 </html>
